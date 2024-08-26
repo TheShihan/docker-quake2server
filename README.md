@@ -1,57 +1,72 @@
+
 # Quake II Server Docker Image
 
-This repository provides a Docker image for running a Quake II server using [Yamagi Quake II](https://yamagi.org/quake2/) on Debian Bookworm. This setup enables you to quickly deploy and manage a Quake II server with minimal configuration.
-
-## Overview
-
-- **Base Image**: `debian:bookworm-slim`
-- **Quake II Version**: Yamagi Quake II (v8.20)
-- **Included Packages**: `quake2-server`, `yamagi-quake2`
+This Docker image runs a Quake II server using **Yamagi Quake II** (v.8.20). It allows users to upload game files, configure mods, and change server settings easily. By default, the server starts with the **baseq2** mod, but users can specify other mods through environment variables.
 
 ## Features
+- Flexible mod support, allowing users to switch between mods like **lithium** or **openffa** (mod files must be provided by the user).
+- Customizable configuration through environment variables.
+- Exposes the default Quake II server port (27910/udp) for game connections (internal quake 2 server port can also be changed).
+- Users can upload original Quake II game files and mod content using volumes.
 
-- **Pre-configured Quake II Server**: Includes the necessary components to run a Quake II server.
-- **Customizable Configuration**: Allows you to provide your own `server.cfg` file for server configuration.
-- **Simple Setup**: Built on Debian Bookworm, using official repositories for installation.
+## Requirements
+You need to have the original Quake II files, especially `pak0.pak`, as they are required to run the server. These can be uploaded to the `baseq2` directory via a Docker volume.
 
-## Configuration
+## Getting Started
 
-### Basic setup
-
-The server needs (at least) the original pak0.pak from the Quake II installation medium which cannot be provided here for legal reasons.
-Map the baseq2 folder of the container and place the pak0.pak file inside that folder. You can place additional paks there if you need them for the server, for example the original pak1.pak that contains the q2dm1 to q2dm8 deathmatch maps.
-
-For example:
-```
-docker run -d --name quake2-server \
-  -v /path/to/your/baseq2:/usr/share/games/quake2/baseq2 \
-  ...
+### 1. Pull the Image
+```bash
+docker pull docker.io/theshihan/quake2server:latest
 ```
 
-(If you want to host games of 'xatrix' or 'rogue' modifications, you also have to map volumes to those mod folders and place the required pak files there).
+### 2. Run the Container
 
-Change the 'startmap' ENV var if you want another map than 'q2dm1' to be used as inital map for the server startup.
+You can start the Quake II server container by specifying the environment variables for the mod and config you wish to use.
 
-Change the 'serverconfig' ENV var if you want to set the name of the server config (*.cfg) to be loaded at startup. Your server configuration for your mod needs to be placed inside this file and this file must be stored in the baseq2 directory (not in the mod directory).
-
-**Important:** This file is required and the server cannot start without a server configuration!
-
-Don't forget to switch to the correct mod inside the server config (`set game modname`).
-
-### Setup the mod
-
-To run your desired mod (modification) on the server you have to set the environment variable 'modname' to the desired value (e.g. 'lithium' or 'openffa' etc.). The default value is 'baseq2'.
-Map the mod directory of the container to a directory on your host containing the required files for the mod (for example the 'game.so').
-
-```
-docker run -d --name quake2-server \
-  ...
-  -v /path/to/your/moddir:/usr/share/games/quake2/moddir \
-  ...
+```bash
+docker run -d \
+  -e Q2MODNAME=lithium \
+  -e Q2MODCONFIG=server.cfg \
+  -e Q2SERVERPORT=27910 \
+  -v /path/to/baseq2:/usr/share/games/quake2/baseq2 \
+  -v /path/to/lithium:/usr/share/games/quake2/lithium \
+  -p 27910:27910/udp \
+  docker.io/theshihan/quake2server:latest
 ```
 
-(where moddir has the value of the 'modname' environment variable of the docker container.)
+- `Q2MODNAME`: The mod directory to be used (e.g., `opentdm`, `lithium`, `openffa`).
+- `Q2MODCONFIG`: The configuration file to be executed for the server settings (default is `server.cfg`).
+- `Q2SERVERPORT`: The (internal) port on which the Quake II server will listen (default is `27910`).
+- `-v /path/to/baseq2`: A mapped volume for the `baseq2` directory, where you upload the `pak0.pak` file and other base Quake II files.
+- `-v /path/to/mod`: A mapped volume for the mod directory, required.
+- `-p 27910:27910/udp`: Maps the server port for external access.
 
-### Server Port
+### 3. Uploading Files
+- **Base Game Files**: You **must** upload the `pak0.pak` file to `/usr/share/games/quake2/baseq2` using the mapped volume. Without this file, the server will not start.
+- **Mod Files**: Upload the mod files to the respective directory. For example, the **lithium** mod should be placed inside `/usr/share/games/quake2/lithium`.
 
-The server always runs on the default port 27910 inside the container but you can map the (external) port of your liking to this internal port.
+### 4. Access the Server
+Once the server is running, connect to it using the server's IP and the port number you specified (default is `27910`, don't forget to open the port on your firewall):
+```
+quake2 +connect <server-address>:<server-port>
+```
+
+## Environment Variables
+
+- **Q2MODNAME**: The mod directory to be used (default: `baseq2`).
+- **Q2MODCONFIG**: The server configuration file (default: `server.cfg`).
+- **Q2SERVERPORT**: The port for the Quake II server (default: `27910`).
+
+## Volumes
+
+- `/usr/share/games/quake2/baseq2`: **Required**. This volume is where the base game files, including `pak0.pak`, are stored.
+- `/usr/share/games/quake2/<modname>`: **Required**. This volume is for custom mod files (e.g., `lithium`, `openffa`, etc.).
+
+## Exposed Ports
+
+- **27910/udp**: The default Quake II server port, configurable via the `Q2SERVERPORT` environment variable.
+
+## Notes
+
+- This Docker image does not include any Quake II content and is meant to run a server using user-provided game files.
+- Ensure the mod directory name matches the standard directory name used by Quake II server browsers, such as `lithium` or `openffa`, for correct functionality.
