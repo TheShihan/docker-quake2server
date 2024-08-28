@@ -35,8 +35,11 @@ RUN mkdir -p /home/quake2-server/.q2pro && \
 COPY start-quake2-server.sh /usr/share/q2pro/start-quake2-server.sh
 RUN chmod +x /usr/share/q2pro/start-quake2-server.sh
 
-# Declare q2pro homedir as a volume so users can upload baseq2/pak0.pak and other files (like mod files)
+# Declare q2pro homedir as a volume so users can upload mods (or baseq2)
 VOLUME /home/quake2-server/.q2pro
+
+# Alternate baseq2 location
+VOLUME /usr/share/q2pro/baseq2
 
 # Switch to the quake2-server user
 USER quake2-server
