@@ -1,7 +1,7 @@
 
 # Quake II Server Docker Image
 
-This Docker image runs a Quake II server using **Yamagi Quake II** (v.8.20). It allows users to upload game files, configure mods, and change server settings easily. By default, the server starts with the **baseq2** mod, but users can specify other mods through environment variables.
+This Docker image runs a Quake II server using q2pro. It allows users to upload game files, configure mods, and change server settings easily. By default, the server starts with the **baseq2** mod, but users can specify other mods through environment variables.
 
 ## Features
 - Flexible mod support, allowing users to switch between mods like **lithium** or **openffa** (mod files must be provided by the user).
@@ -58,6 +58,13 @@ quake2 +connect <server-address>:<server-port>
 - **Q2SERVERPORT**: The port for the Quake II server (default: `27910`).
 
 ## Volumes
+
+### q2pro Version
+
+- `/home/quake2-server/.q2pro/baseq2`: **Required**. This volume is where the base game files, including `pak0.pak`, are stored.
+- `/home/quake2-server/.q2pro/<modname>`: **Required**. This volume is for custom mod files (e.g., `lithium`, `openffa`, etc.).
+
+### Yamagi Version
 
 - `/usr/share/games/quake2/baseq2`: **Required**. This volume is where the base game files, including `pak0.pak`, are stored.
 - `/usr/share/games/quake2/<modname>`: **Required**. This volume is for custom mod files (e.g., `lithium`, `openffa`, etc.).

@@ -18,22 +18,22 @@ RUN apt-get install -y meson gcc libc6-dev zlib1g-dev git && \
 RUN git clone https://github.com/skullernet/q2pro.git /tmp/q2pro && \
     cd /tmp/q2pro && \
     meson setup builddir && \
-    meson configure -Dprefix=/usr builddir && \
+    meson configure builddir -Dprefix=/usr && \
     meson compile -C builddir && \
     ninja -C builddir install && \
     rm -rf /tmp/q2pro
 
 # Create the quake2-server user and group if necessary
-RUN groupadd -r quake2-server || true && useradd -r -g quake2-server quake2-server || true
+RUN groupadd -r quake2-server && useradd -r -g quake2-server -m -d /home/quake2-server quake2-server
 
 # Create necessary directories and set permissions
-RUN mkdir -p /home/quake2-server/.q2pro && \
+RUN mkdir -p /home/quake2-server/.q2pro/baseq2 && \
     chown -R quake2-server:quake2-server /usr/share/q2pro && \
-    chown -R quake2-server:quake2-server /home/quake2-server/.q2pro
+    chmod -R 755 /usr/share/q2pro
 
 # Copy the server start script into the container
-COPY start-quake2-server.sh /usr/share/q2pro/start-quake2-server.sh
-RUN chmod +x /usr/share/q2pro/start-quake2-server.sh
+COPY start-quake2-server.sh /home/quake2-server/start-quake2-server.sh
+RUN chmod +x /home/quake2-server/start-quake2-server.sh
 
 # Declare q2pro homedir as a volume so users can upload mods (or baseq2)
 VOLUME /home/quake2-server/.q2pro
@@ -48,4 +48,4 @@ USER quake2-server
 EXPOSE 27910/udp
 
 # Define the entry point to the start script
-ENTRYPOINT ["/usr/share/q2pro/start-quake2-server.sh"]
+ENTRYPOINT ["/home/quake2-server/start-quake2-server.sh"]
