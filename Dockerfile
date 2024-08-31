@@ -24,25 +24,28 @@ RUN git clone https://github.com/skullernet/q2pro.git /tmp/q2pro && \
     rm -rf /tmp/q2pro
 
 # Create the quake2-server user and group if necessary
-RUN groupadd -r quake2-server && useradd -r -g quake2-server -m -d /home/quake2-server quake2-server
+RUN groupadd -r -g 1001 quake2-server && useradd -r -g quake2-server -m -d /home/quake2-server -s /bin/bash -u 1001 quake2-server
 
 # Create necessary directories and set permissions
-RUN mkdir -p /home/quake2-server/.q2pro/baseq2 && \
-    chown -R quake2-server:quake2-server /usr/share/q2pro && \
+RUN chown -R quake2-server:quake2-server /usr/share/q2pro && \
     chmod -R 755 /usr/share/q2pro
 
 # Copy the server start script into the container
 COPY start-quake2-server.sh /home/quake2-server/start-quake2-server.sh
-RUN chmod +x /home/quake2-server/start-quake2-server.sh
+RUN chmod +x /home/quake2-server/start-quake2-server.sh && \
+    chown -R quake2-server:quake2-server /home/quake2-server
+
+# Switch to the quake2-server user
+USER quake2-server
+
+# Create necessary directories inside home dir of user
+RUN mkdir -p /home/quake2-server/.q2pro/baseq2
 
 # Declare q2pro homedir as a volume so users can upload mods (or baseq2)
 VOLUME /home/quake2-server/.q2pro
 
 # Alternate baseq2 location
 VOLUME /usr/share/q2pro/baseq2
-
-# Switch to the quake2-server user
-USER quake2-server
 
 # Expose the default Quake II server port (can be changed using the Q2SERVERPORT environment variable)
 EXPOSE 27910/udp
