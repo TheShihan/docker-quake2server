@@ -57,7 +57,15 @@ quake2 +connect <server-address>:<server-port>
 - **Q2MODCONFIG**: The server configuration file (default: `server.cfg`).
 - **Q2SERVERPORT**: The port for the Quake II server (default: `27910`).
 
-## Volumes
+## Volume
+
+Make sure that the user running the container (quake2-server with user ID 1001 and group ID 1001) can write to the mounted volumes.
+This is at least needed for most mods:
+
+```
+chown -R 1001:1001 /path/to/mounted/directory  # Based on UID/GID of 'quake2-server' inside the container
+chmod -R 755 /path/to/mounted/directory
+```
 
 ### q2pro Version
 

@@ -28,18 +28,19 @@ RUN groupadd -r -g 1001 quake2-server && useradd -r -g quake2-server -m -d /home
 
 # Create necessary directories and set permissions
 RUN chown -R quake2-server:quake2-server /usr/share/q2pro && \
+    mkdir -p /home/quake2-server/.q2pro/baseq2 && \
     chmod -R 755 /usr/share/q2pro
 
-# Copy the server start script into the container
+# Copy the server start script into the container and ensure permissions
 COPY start-quake2-server.sh /home/quake2-server/start-quake2-server.sh
 RUN chmod +x /home/quake2-server/start-quake2-server.sh && \
     chown -R quake2-server:quake2-server /home/quake2-server
 
+# Set the working directory
+WORKDIR /usr/share/q2pro
+
 # Switch to the quake2-server user
 USER quake2-server
-
-# Create necessary directories inside home dir of user
-RUN mkdir -p /home/quake2-server/.q2pro/baseq2
 
 # Declare q2pro homedir as a volume so users can upload mods (or baseq2)
 VOLUME /home/quake2-server/.q2pro
