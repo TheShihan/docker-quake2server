@@ -36,17 +36,14 @@ COPY start-quake2-server.sh /home/quake2-server/start-quake2-server.sh
 RUN chmod +x /home/quake2-server/start-quake2-server.sh && \
     chown -R quake2-server:quake2-server /home/quake2-server
 
-# Set the working directory
-WORKDIR /usr/share/q2pro
+# Set the working directory (to where the mod files will be, useful for older mods to find the needed files)
+WORKDIR /home/quake2-server/.q2pro
 
 # Switch to the quake2-server user
 USER quake2-server
 
-# Declare q2pro homedir as a volume so users can upload mods (or baseq2)
+# Declare q2pro homedir as a volume so users can upload mods (and baseq2 for pak0.pak etc.)
 VOLUME /home/quake2-server/.q2pro
-
-# Alternate baseq2 location
-VOLUME /usr/share/q2pro/baseq2
 
 # Expose the default Quake II server port (can be changed using the Q2SERVERPORT environment variable)
 EXPOSE 27910/udp
